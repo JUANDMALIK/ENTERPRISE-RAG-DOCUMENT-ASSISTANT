@@ -62,3 +62,33 @@ The response contains the generated answer:
 ```json
 {"answer":"..."}
 ```
+
+### PostgreSQL, pgvector, and document ingestion
+
+The backend includes PostgreSQL/pgvector support for storing and searching
+document embeddings. Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`; the
+local URL default is `jdbc:postgresql://localhost:5432/enterprise_rag` and the
+username default is `postgres`. Set `DB_PASSWORD` in the environment rather
+than relying on a password default. The database must provide the pgvector
+extension. The root `.env.example` lists the backend variables with placeholders.
+
+Embeddings are disabled by default (`AI_EMBEDDING_PROVIDER=none`). To enable
+OpenAI embeddings, set `AI_EMBEDDING_PROVIDER=openai` and `OPENAI_API_KEY`. The
+default embedding model is `text-embedding-3-small` with 1536 dimensions;
+`OPENAI_EMBEDDING_MODEL` and `OPENAI_EMBEDDING_DIMENSIONS` can override these
+defaults. The pgvector store defaults to 1536 dimensions and cosine distance.
+If overriding embedding or vector dimensions, keep them compatible.
+
+Schema initialization is disabled by default. Set
+`PGVECTOR_INITIALIZE_SCHEMA=true` to let the application initialize the
+pgvector schema; the database role needs permission to create the required
+objects. Otherwise, provision the schema separately.
+
+`DocumentIngestionService` accepts document text, splits it with Spring AI's
+`TokenTextSplitter`, stores chunks and their document/chunk metadata through
+the PGvector `VectorStore`, and provides similarity search. It is a reusable
+service only: there is no document upload or ingestion HTTP endpoint, and the
+existing `POST /api/chat` behavior is unchanged.
+
+When using Ollama for chat with OpenAI embeddings, activate both Maven profiles
+(`-Popenai,ollama`) so the OpenAI embedding implementation is available.
