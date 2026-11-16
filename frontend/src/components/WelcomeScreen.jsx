@@ -8,12 +8,12 @@ function WelcomeScreen() {
       <p className="eyebrow">WELCOME TO NEXUS AI</p>
       <h2>Your ideas, in conversation.</h2>
       <p className="welcome-description">
-        Ask the assistant a question to get started. Your conversation will
-        appear here.
+        Upload a PDF or TXT document, then ask a question grounded in its
+        contents.
       </p>
       <div className="welcome-hint">
         <span aria-hidden="true">↳</span>
-        <span>Start by typing a message below</span>
+        <span>Upload a document or ask a question below</span>
       </div>
     </div>
   )

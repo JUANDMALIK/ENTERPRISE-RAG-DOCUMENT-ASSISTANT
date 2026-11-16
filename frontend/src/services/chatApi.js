@@ -1,6 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '')
-  .trim()
-  .replace(/\/+$/, '')
+import { API_BASE_URL } from './apiBaseUrl.js'
 
 export async function sendChatMessage(message) {
   let response
@@ -31,13 +29,24 @@ export async function sendChatMessage(message) {
 
   if (!response.ok) {
     throw new Error(
-      `The assistant request failed (HTTP ${response.status}).`,
+      typeof payload?.message === 'string'
+        ? payload.message
+        : `The assistant request failed (HTTP ${response.status}).`,
     )
   }
 
-  if (typeof payload?.answer !== 'string') {
+  if (typeof payload?.answer !== 'string' || !payload.answer.trim()) {
     throw new Error('The assistant response did not include a valid answer.')
   }
 
-  return payload.answer
+  const sources = Array.isArray(payload.sources)
+    ? payload.sources.filter(
+        (source) =>
+          source &&
+          typeof source.documentId === 'string' &&
+          typeof source.documentName === 'string',
+      )
+    : []
+
+  return { answer: payload.answer, sources }
 }

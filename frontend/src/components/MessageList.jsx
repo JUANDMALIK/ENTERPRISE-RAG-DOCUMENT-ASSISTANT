@@ -19,6 +19,22 @@ function MessageList({ messages }) {
                 {isAssistant ? 'Nexus AI' : 'You'}
               </span>
               <p className="message-bubble">{message.content}</p>
+              {isAssistant && message.sources?.length > 0 && (
+                <div className="message-sources" aria-label="Answer sources">
+                  <span>Sources</span>
+                  <ul>
+                    {message.sources.map((source, sourceIndex) => (
+                      <li
+                        key={`${source.documentId}-${source.chunkIndex ?? sourceIndex}`}
+                      >
+                        {source.documentName}
+                        {Number.isInteger(source.chunkIndex) &&
+                          ` · chunk ${source.chunkIndex + 1}`}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             {!isAssistant && (
               <span className="user-avatar" aria-label="You">

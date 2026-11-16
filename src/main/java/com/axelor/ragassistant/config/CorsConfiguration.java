@@ -1,0 +1,24 @@
+package com.axelor.ragassistant.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class CorsConfiguration implements WebMvcConfigurer {
+
+    private final String allowedOrigin;
+
+    public CorsConfiguration(@Value("${app.cors.allowed-origin:http://localhost:5173}") String allowedOrigin) {
+        this.allowedOrigin = allowedOrigin;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins(this.allowedOrigin)
+                .allowedMethods("GET", "POST", "OPTIONS")
+                .allowedHeaders("Accept", "Content-Type");
+    }
+}

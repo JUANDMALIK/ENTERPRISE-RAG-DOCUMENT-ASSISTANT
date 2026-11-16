@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ChatInput from './components/ChatInput.jsx'
+import DocumentUpload from './components/DocumentUpload.jsx'
 import MessageList from './components/MessageList.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import WelcomeScreen from './components/WelcomeScreen.jsx'
@@ -20,9 +21,9 @@ function App() {
     conversationEnd.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, isLoading, error])
 
-  function createMessage(role, content) {
+  function createMessage(role, content, sources = []) {
     nextMessageId.current += 1
-    return { id: nextMessageId.current, role, content }
+    return { id: nextMessageId.current, role, content, sources }
   }
 
   async function handleSubmit(event) {
@@ -48,8 +49,12 @@ function App() {
     ])
 
     try {
-      const answer = await sendChatMessage(message)
-      const assistantMessage = createMessage('assistant', answer)
+      const result = await sendChatMessage(message)
+      const assistantMessage = createMessage(
+        'assistant',
+        result.answer,
+        result.sources,
+      )
       setMessages((currentMessages) => [
         ...currentMessages,
         assistantMessage,
@@ -89,10 +94,13 @@ function App() {
             <p className="eyebrow">YOUR AI WORKSPACE</p>
             <h1>Assistant</h1>
           </div>
-          <span className="connection-label">
-            <span className="connection-dot" aria-hidden="true" />
-            Chat workspace
-          </span>
+          <div className="header-actions">
+            <DocumentUpload />
+            <span className="connection-label">
+              <span className="connection-dot" aria-hidden="true" />
+              Chat workspace
+            </span>
+          </div>
         </header>
 
         <section
