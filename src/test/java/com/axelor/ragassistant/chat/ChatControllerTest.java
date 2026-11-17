@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,12 +28,14 @@ class ChatControllerTest {
     private ChatService chatService;
 
     @Test
+    @WithMockUser
     void returnsTheGeneratedAnswerAndSourceReferences() throws Exception {
         when(chatService.chatWithContext("Hello")).thenReturn(new ChatResult(
                 "Hello there",
                 List.of(new SourceReference("doc-1", "guide.txt", 0))));
 
         mockMvc.perform(post("/api/chat")
+                        .with(csrf())
                         .contentType("application/json")
                         .content("{\"message\":\"Hello\"}"))
                 .andExpect(status().isOk())
@@ -44,8 +48,10 @@ class ChatControllerTest {
     }
 
     @Test
+    @WithMockUser
     void rejectsBlankMessages() throws Exception {
         mockMvc.perform(post("/api/chat")
+                        .with(csrf())
                         .contentType("application/json")
                         .content("{\"message\":\" \"}"))
                 .andExpect(status().isBadRequest());
@@ -54,11 +60,13 @@ class ChatControllerTest {
     }
 
     @Test
+    @WithMockUser
     void reportsRetrievalAndProviderFailuresWithServiceErrors() throws Exception {
         when(chatService.chatWithContext("Hello"))
                 .thenThrow(new IllegalStateException("database unavailable"));
 
         mockMvc.perform(post("/api/chat")
+                        .with(csrf())
                         .contentType("application/json")
                         .content("{\"message\":\"Hello\"}"))
                 .andExpect(status().isServiceUnavailable())
@@ -69,6 +77,7 @@ class ChatControllerTest {
                 .when(chatService).chatWithContext("Hello");
 
         mockMvc.perform(post("/api/chat")
+                        .with(csrf())
                         .contentType("application/json")
                         .content("{\"message\":\"Hello\"}"))
                 .andExpect(status().isBadGateway())
