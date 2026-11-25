@@ -37,7 +37,7 @@ Embeddings are disabled by default (`AI_EMBEDDING_PROVIDER=none`). To enable Ope
 
 Schema initialization is disabled by default. To let the application create its pgvector schema, set `PGVECTOR_INITIALIZE_SCHEMA=true`; the database user will need permission to create the required schema objects. Otherwise, provision the schema separately.
 
-There is currently no HTTP endpoint for uploading or ingesting documents, so this configuration alone does not populate the vector store.
+Uploaded PDFs can be ingested through `POST /api/documents/upload`. The endpoint extracts text, splits it into chunks, and indexes them in pgvector. Configure PostgreSQL and an embedding model as described below before uploading.
 
 When using Ollama for chat with OpenAI embeddings, activate both Maven profiles so both model integrations are available:
 
@@ -86,9 +86,28 @@ objects. Otherwise, provision the schema separately.
 
 `DocumentIngestionService` accepts document text, splits it with Spring AI's
 `TokenTextSplitter`, stores chunks and their document/chunk metadata through
-the PGvector `VectorStore`, and provides similarity search. It is a reusable
-service only: there is no document upload or ingestion HTTP endpoint, and the
-existing `POST /api/chat` behavior is unchanged.
+the PGvector `VectorStore`, and provides similarity search.
 
 When using Ollama for chat with OpenAI embeddings, activate both Maven profiles
 (`-Popenai,ollama`) so the OpenAI embedding implementation is available.
+### PDF upload API
+
+```http
+POST /api/documents/upload
+Content-Type: multipart/form-data
+
+file=@document.pdf
+```
+
+The response reports the generated document ID, page count, text size, and chunk count:
+
+```json
+{
+  "documentId": "...",
+  "fileName": "document.pdf",
+  "pageCount": 1,
+  "characterCount": 42,
+  "chunkCount": 1,
+  "indexed": true
+}
+```

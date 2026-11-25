@@ -1,6 +1,10 @@
 spring:
   application:
     name: enterprise-rag-document-assistant
+  servlet:
+    multipart:
+      max-file-size: ${PDF_MAX_FILE_SIZE:20MB}
+      max-request-size: ${PDF_MAX_REQUEST_SIZE:20MB}
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/enterprise_rag}
     username: ${DB_USERNAME:postgres}
