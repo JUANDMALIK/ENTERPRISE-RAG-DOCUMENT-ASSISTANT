@@ -36,6 +36,14 @@ public class DocumentIngestionService {
     }
 
     public int ingest(String documentName, String content) {
+        return ingestDocument(null, documentName, content);
+    }
+
+    public int ingest(String documentId, String documentName, String content) {
+        return ingestDocument(documentId, documentName, content);
+    }
+
+    private int ingestDocument(String documentId, String documentName, String content) {
         String normalizedName = requireText(documentName, "Document name");
         String documentContent = requireText(content, "Document content");
         List<Document> splitDocuments = this.textSplitter.split(
@@ -55,6 +63,9 @@ public class DocumentIngestionService {
             metadata.put("document_name", normalizedName);
             metadata.put("chunk_index", index);
             metadata.put("chunk_count", splitDocuments.size());
+            if (documentId != null) {
+                metadata.put("document_id", documentId);
+            }
             chunks.add(new Document(splitDocument.getText(), metadata));
         }
 
